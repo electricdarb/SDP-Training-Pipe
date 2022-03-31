@@ -1,11 +1,6 @@
-import torch 
 import cv2
 import os
-import torch
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
 import random
 
 def center_crop(img):
@@ -17,8 +12,8 @@ def center_crop(img):
 
 	# process crop width and height for max available dimension
 	crop_width = img.shape[0] if img.shape[0]<img.shape[1] else img.shape[1]
-	mid_x, mid_y = int(width/2), int(height/2)
-	cw2, ch2 = int(crop_width/2), int(crop_width/2) 
+	mid_x, mid_y = int(width / 2), int(height / 2)
+	cw2, ch2 = int(crop_width/2), int(crop_width / 2) 
 	crop_img = img[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 	return crop_img
 
@@ -87,8 +82,6 @@ def remove_randbox(item, height, width):
         height: height of box to subtract
         width: width of box to subtract
     """
-    # copy to prevent hazards 
-    item = item 
 
     # define shape of item 
     shape = item.shape
@@ -192,9 +185,8 @@ def augment(image, rotate_range = np.pi/12,
     y_shift = random.uniform(-shift_range, shift_range)
     image = shift(image, x_shift, y_shift)
 
-    # dont add color changes to image alpha layer 
-    if image.shape[2] == 4:
-        alpha_layer = image[:, :, 3]
+    # save copy of image for proccess later
+    image_orignal = image.copy()
 
     image = brightness_shift(image, random.uniform(-brightness_range, brightness_range)) # random adjust background brightness
     image = hue_shift(image, random.uniform(-hue_range, hue_range)) # random adjust background hue 
@@ -208,8 +200,9 @@ def augment(image, rotate_range = np.pi/12,
             image = cv2.flip(image, 1)
     
     # add back orignal alpha layer
-    if image.shape[2] == 4:
-        image[:, :, 3] = alpha_layer
+    if image_orignal.shape[-1] == 4:
+        image_orignal[:, :, :3] = image[:, :, :3]
+        image = image_orignal
 
     return image
 
@@ -235,6 +228,9 @@ def preprocess(item_files,
     background = center_crop(background) 
     background = cv2.resize(background, output_size)
 
+    # define background size 
+    background_shape = background.shape
+
     # apply transforms to background 
     background = augment(background)
 
@@ -246,7 +242,6 @@ def preprocess(item_files,
         # read item 
         item_path = os.path.join(root_dir, item_file)
         item = cv2.imread(item_path, -1)
-        item_id = int(item_file[:4]) # item id is stored in first 4 chars of item_file
 
         # apply custom augmentations
         item = augment(item, rotate_range = np.pi)
@@ -259,63 +254,23 @@ def preprocess(item_files,
 
         # random choise relative size, could be improed by having smaller values be smaller 
         scale = random.uniform(*scale_range)
-
-        # append label to labels list
-        labels.append((item_id, x_center, y_center, scale, scale))
         
         # overlay item onto background 
         background = overlay(background, item, scale, x_center, y_center)
 
-    return background, labels 
+        # calculate xmin, ymin, xmax, ymax
+        xmin, ymin = x_center - scale / 2, y_center - scale / 2
+        xmax, ymax = x_center + scale / 2, y_center + scale / 2
 
-class ImageOverlay(Dataset):
-    """Face Landmarks dataset."""
+        xmin, ymin = max(0, xmin), max(0, ymin)
+        xmax, ymax = min(1, xmax), min(1, ymax)
 
-    def __init__(self, root_dir, 
-            item_csv_file, 
-            background_csv_file, 
-            item_image_dir, 
-            background_image_dir, 
-            transform=None):
-        """
-        Args:
-            root_dir: root dir where paths are relative to 
-            item_csv_file: path to dataset csv with columns: item 0 name, item 1 name, item 2 name...
-                each cell has a file name formated f'{item_id:04}{orientation number}'
-            item_image_dir: dir with 4 channel transparent csv files that includes only the items with a transparent background
-            background_image_dir: dur with 3 channel rbg photos
-        """
+        xmin, ymin, xmax, ymax = [int(var * background_shape[0]) for var in (xmin, ymin, xmax, ymax)]
 
-        self.items = pd.read_csv(item_csv_file)['file_name'].to_list() # change this
-        self.backgrounds = pd.read_csv(background_csv_file)['file_name'].to_list() 
-        
-        self.root_dir = root_dir
+        # append label to labels list
+        labels.append((xmin, ymin, xmax, ymax))
 
-        self.item_image_dir = os.path.join(root_dir, item_image_dir)
-        self.background_image_dir = os.path.join(root_dir, background_image_dir)
-
-        self.transform = transform
-
-    def __getitem__(self, idx):
-        """
-        Reads a random background and item and returns an image with a label 
-        """
-        # chose one random photo of each item for training 
-        item_files = [random.choice(items) for items in self.items]
-
-        # chose random background 
-        background_file = random.choice(self.backgrounds)
-
-        # preprocess the image, returning image and labels 
-        image, labels = preprocess(item_files, background_file, self.root_dir)
-
-        # convert image to tensor
-        image = torch.from_numpy(image)
-
-        # convert labels to proper format
-
-
-        return image, labels
+    return background, labels
 
 if __name__ == '__main__':
-    pass
+    x = 1
