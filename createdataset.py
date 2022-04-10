@@ -45,11 +45,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--root_dir", help = "Directory where folder is or is to be created", default = './data')
 parser.add_argument("--item_folder", help = "folder that has the items, see README for structure information", default = './items')
 parser.add_argument("--backgrounds", help = "folder that has the background images, see README for structure information", default = './backgrounds')
-parser.add_argument("--dataset_size", help = "number of images to generate in the dataset", default = 1)
+parser.add_argument("--dataset_size", help = "number of images to generate in the dataset", default = 10)
 
 args = parser.parse_args()
 
-def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 1, image_size = 640):
+def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_size = 640):
     """
     root_dir: root dir where the ds is creare
     item_folfer
@@ -69,7 +69,6 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 1, image_s
 
         # randomly select instance of item from each folder
         item_names = list(os.scandir(item_folder))
-        
         items = [choice(list(os.scandir(folder))) for folder in item_names]
         
         # preprocces and save image
@@ -104,4 +103,4 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 1, image_s
             file.write(contents)
 
 if __name__ == '__main__':
-    create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = args.dataset_size)
+    create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = int(args.dataset_size))

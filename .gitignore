@@ -6,13 +6,11 @@
 
 !README.md
 
-!backgrounds.csv
-!items.csv
-
 !createdataset.py
 !preprocess.py
 !items
 !items/*
+!items/*/*
 !backgrounds
 !backgrounds/*
 
