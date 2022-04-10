@@ -4,6 +4,7 @@ import argparse
 import os 
 from random import choice
 import cv2
+from tqdm import trange
 
 XML_FORMAT = """
 <annotation>
@@ -62,7 +63,7 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
 
     backgrounds = list(os.scandir(backgrounds))
     
-    for i in range(dataset_size):
+    for i in trange(dataset_size):
 
         # randomly select background
         background = choice(backgrounds)
