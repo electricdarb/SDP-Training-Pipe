@@ -51,17 +51,23 @@ parser.add_argument("--dataset_size", help = "number of images to generate in th
 args = parser.parse_args()
 
 def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_size = 640):
-    """
-    root_dir: root dir where the ds is creare
+    """ creates a dataset from item images and background images
+    root_dir: root dir where the ds is created
     item_folfer
     """
 
     # create needed dir in root_dir 
-    for dir in [root_dir, os.path.join(root_dir, 'Annotations'), os.path.join(root_dir, 'JPEGImages')]:
+    for dir in [root_dir, os.path.join(root_dir, 'Annotations'), os.path.join(root_dir, 'JPEGImages'), os.path.join(root_dir, 'ImageSets'), os.path.join(root_dir, 'ImageSets', 'Main')]:
         if not os.path.exists(dir):
             os.makedirs(dir)
 
+    # define item names and backgrounds
     backgrounds = list(os.scandir(backgrounds))
+    item_names = list(os.scandir(item_folder))
+    
+    # create labels.txt file \
+    with open(os.path.join(root_dir, 'labels.txt'), 'w') as f:
+        f.writelines([item.name + '\n' for item in item_names])
     
     for i in trange(dataset_size):
 
@@ -69,7 +75,6 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
         background = choice(backgrounds)
 
         # randomly select instance of item from each folder
-        item_names = list(os.scandir(item_folder))
         items = [choice(list(os.scandir(folder))) for folder in item_names]
         
         # preprocces and save image
@@ -102,6 +107,12 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
 
         with open(label_path, 'w') as file:
             file.write(contents)
+
+        # write for to splits, this is a hack
+        for fname in ['test.txt', 'train.txt', 'trainval.txt', 'val.txt']:
+            with open(os.path.join(root_dir, 'ImageSets', 'Main', fname), 'a') as f:
+                f.write(f'{i:05}' + '\n')
+
 
 if __name__ == '__main__':
     create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = int(args.dataset_size))
