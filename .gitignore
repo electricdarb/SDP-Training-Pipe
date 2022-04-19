@@ -1,17 +1,3 @@
-# ignore all by default 
-*
 
-# do not ignore gitignore 
-!.gitignore
-
-!README.md
-
-!createdataset.py
-!preprocess.py
-!items
-!items/*
-!items/*/*
-!backgrounds
-!backgrounds/*
 
 

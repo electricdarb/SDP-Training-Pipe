@@ -1,0 +1,156 @@
+
+<annotation>
+    <filename>00005.jpeg</filename>
+    <folder>data</folder>
+    <source>
+        <database>data</database>
+        <annotation>custom</annotation>
+        <image>custom</image>
+    </source>
+    <size>
+        <width>640</width>
+        <height>640</height>
+        <depth>3</depth>
+    </size>
+    <segmented>0</segmented>
+    
+    <object>
+        <name>Airpods</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>154</xmin>
+            <ymin>278</ymin>
+            <xmax>329</xmax>
+            <ymax>453</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Bottle</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>364</xmin>
+            <ymin>305</ymin>
+            <xmax>472</xmax>
+            <ymax>413</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Calculator</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>386</xmin>
+            <ymin>92</ymin>
+            <xmax>477</xmax>
+            <ymax>184</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Granola Bar</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>531</xmin>
+            <ymin>224</ymin>
+            <xmax>609</xmax>
+            <ymax>302</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Hat</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>428</xmin>
+            <ymin>261</ymin>
+            <xmax>522</xmax>
+            <ymax>355</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Hot Glue Gun</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>159</xmin>
+            <ymin>71</ymin>
+            <xmax>320</xmax>
+            <ymax>233</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Keys</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>409</xmin>
+            <ymin>0</ymin>
+            <xmax>582</xmax>
+            <ymax>96</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Mask</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>461</xmin>
+            <ymin>292</ymin>
+            <xmax>585</xmax>
+            <ymax>416</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Pliers</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>180</xmin>
+            <ymin>380</ymin>
+            <xmax>318</xmax>
+            <ymax>517</ymax>
+        </bndbox>
+    </object>
+
+
+    <object>
+        <name>Ucard</name>
+        <pose>unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>338</xmin>
+            <ymin>196</ymin>
+            <xmax>488</xmax>
+            <ymax>346</ymax>
+        </bndbox>
+    </object>
+
+</annotation>
