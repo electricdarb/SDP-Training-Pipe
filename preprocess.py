@@ -210,7 +210,8 @@ def preprocess(item_files,
             background_file, 
             output_size = (640, 640),
             scale_range = (.1, .3),
-            root_dir = './'):
+            root_dir = './',
+            oclusion = False):
     """
     Args:
         item_files: filenames of object images 
@@ -246,8 +247,9 @@ def preprocess(item_files,
         # apply custom augmentations
         item = augment(item, rotate_range = np.pi)
 
-        # remove random box to simulate partial occlusion
-        item = remove_randbox(item, random.uniform(.3, .7), random.uniform(.3, .7))   
+        if oclusion:
+            # remove random box to simulate partial occlusion
+            item = remove_randbox(item, random.uniform(.3, .7), random.uniform(.3, .7))   
 
         # choice x and y randomly
         x_center, y_center = [random.uniform(0., 1.) for i in range(2)]

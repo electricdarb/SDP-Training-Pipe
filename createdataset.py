@@ -5,6 +5,7 @@ import os
 from random import choice
 import cv2
 from tqdm import trange
+import shutil
 
 XML_FORMAT = """
 <annotation>
@@ -43,39 +44,49 @@ ITEM_XML_FORMAT = """
 # create parser 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--root_dir", help = "Directory where folder is or is to be created", default = './data')
-parser.add_argument("--item_folder", help = "folder that has the items, see README for structure information", default = './items')
+parser.add_argument("--root-dir", help = "Directory where folder is or is to be created", default = './data')
+parser.add_argument("--item-folder", help = "folder that has the items, see README for structure information", default = './items')
 parser.add_argument("--backgrounds", help = "folder that has the background images, see README for structure information", default = './backgrounds')
-parser.add_argument("--dataset_size", help = "number of images to generate in the dataset", default = 10)
+parser.add_argument("--dataset-size", help = "number of images to generate in the dataset", default = 10)
 
 args = parser.parse_args()
 
 def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_size = 640):
     """ creates a dataset from item images and background images
-    root_dir: root dir where the ds is created
+    root_dir: root dir where the dataset is to be created
     item_folfer
     """
 
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
     # create needed dir in root_dir 
-    for dir in [root_dir, os.path.join(root_dir, 'Annotations'), os.path.join(root_dir, 'JPEGImages'), os.path.join(root_dir, 'ImageSets'), os.path.join(root_dir, 'ImageSets', 'Main')]:
-        if not os.path.exists(dir):
-            os.makedirs(dir)
+    for dir in [os.path.join(root_dir, 'Annotations'), os.path.join(root_dir, 'JPEGImages'), os.path.join(root_dir, 'ImageSets'), os.path.join(root_dir, 'ImageSets', 'Main')]:
+        # remove 
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+
+        os.makedirs(dir)
+        
 
     # define item names and backgrounds
     backgrounds = list(os.scandir(backgrounds))
-    item_names = list(os.scandir(item_folder))
+    item_folders = list(os.scandir(item_folder))
+    item_names = [str(item_name).replace("<DirEntry ", "").replace(">", "").replace("'", "") for item_name in item_folders]
     
     # create labels.txt file \
     with open(os.path.join(root_dir, 'labels.txt'), 'w') as f:
-        f.writelines([item.name + '\n' for item in item_names])
+        f.write('\n'.join(item_names))
     
-    for i in trange(dataset_size):
+    # list if image / label file names 
+    file_names = []
 
+    for i in trange(dataset_size):
         # randomly select background
         background = choice(backgrounds)
 
         # randomly select instance of item from each folder
-        items = [choice(list(os.scandir(folder))) for folder in item_names]
+        items = [choice(list(os.scandir(folder))) for folder in item_folders]
         
         # preprocces and save image
         photo, labels = preprocess(items, background, output_size = (image_size, image_size))
@@ -94,10 +105,8 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
         # loop through each label to create the contents of the xml
         for item_name, label in zip(item_names, labels):
             xmin, ymin, xmax, ymax = label 
-
-            name = str(item_name).replace("<DirEntry ", "").replace(">", "").replace("'", "")
             
-            item_xml = ITEM_XML_FORMAT.format(name = name, xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
+            item_xml = ITEM_XML_FORMAT.format(name = item_name, xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
 
             item_contents.append(item_xml)
 
@@ -108,11 +117,43 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
         with open(label_path, 'w') as file:
             file.write(contents)
 
-        # write for to splits, this is a hack
-        for fname in ['test.txt', 'train.txt', 'trainval.txt', 'val.txt']:
-            with open(os.path.join(root_dir, 'ImageSets', 'Main', fname), 'a') as f:
-                f.write(f'{i:05}' + '\n')
+        file_names.append(f'{i:05}')
 
+    from sklearn.model_selection import train_test_split
+    
+    # split test and val
+    train_names, val_names = train_test_split(file_names, test_size = .1)
 
+    # write split files 
+    # test and val are the same
+    for fname in ['test.txt', 'val.txt']:
+        with open(os.path.join(root_dir, 'ImageSets', 'Main', fname), 'a') as f:
+            for name in val_names:
+                f.write(name + '\n')
+
+    # write tain names to train file
+    with open(os.path.join(root_dir, 'ImageSets', 'Main', 'train.txt'), 'a') as f:
+        for name in train_names:
+            f.write(name + '\n')
+
+    # trainval will have every file 
+    with open(os.path.join(root_dir, 'ImageSets', 'Main', 'trainval.txt'), 'a') as f:
+        for name in file_names:
+            f.write(name + '\n')
+
+    dataset_info = {
+        'num_images': dataset_size,
+        'num_classes': len(item_names),
+        'classes': item_names,
+        'root_dir': root_dir,
+    }
+
+    return dataset_info
+            
+        
 if __name__ == '__main__':
     create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = int(args.dataset_size))
+
+    """
+    python createdataset.py --root-dir /mnt/c/Users/14135/Desktop/pytorch-ssd/data --dataset-size 100
+    """
