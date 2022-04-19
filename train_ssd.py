@@ -23,6 +23,7 @@ from vision.ssd.config import mobilenetv1_ssd_config
 from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
 
 from vision.utils.misc import store_labels
+from tqdm import trange
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -172,7 +173,7 @@ def train_net(epochs,
 
     scheduler = CosineAnnealingLR(optimizer, t_max, last_epoch=last_epoch)
 
-    for epoch in range(epochs):
+    for epoch in trange(epochs):
         scheduler.step()
         train(train_loader, net, criterion, optimizer, device=DEVICE, epoch=epoch)
 
