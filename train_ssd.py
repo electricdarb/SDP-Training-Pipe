@@ -119,11 +119,6 @@ def get_data_loaders(dataset_path = '/mnt/c/Users/14135/Desktop/pytorch-ssd/data
         val_loader = DataLoader(val_dataset, 1, num_workers = 2, shuffle=False)
 
     return train_loader, val_loader
-                        
-
-import ray
-from ray import tune
-from ray.tune.schedulers import AsyncHyperBandScheduler
 
 
 def train_net(epochs, 
