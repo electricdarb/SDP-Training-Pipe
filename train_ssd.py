@@ -84,7 +84,7 @@ def test(loader, net, criterion, device):
 
     return running_loss / num, running_regression_loss / num, running_classification_loss / num
 
-def get_data_loaders(dataset_path = '/mnt/c/Users/14135/Desktop/pytorch-ssd/data'):
+def get_data_loaders(dataset_path = 'data'):
     dataset_paths = [dataset_path]
     datasets = []
 
@@ -128,7 +128,7 @@ def train_net(epochs,
         t_max, 
         base_lr, 
         num_classes, 
-        dataset_path = '/mnt/c/Users/14135/Desktop/pytorch-ssd/data'):
+        dataset_path = 'data'):
      # select the network architecture and config     
     
     create_net = create_mobilenetv1_ssd
@@ -159,7 +159,7 @@ def train_net(epochs,
         )}
     ]
 
-    net.init_from_pretrained_ssd("/mnt/c/Users/14135/Desktop/pytorch-ssd/models/mobilenet-v1-ssd-mp-0_675.pth")
+    net.init_from_pretrained_ssd("models/mobilenet-v1-ssd-mp-0_675.pth")
 
     # move the model to GPU
     net.to(DEVICE)
@@ -182,8 +182,8 @@ def main():
     # create dataset here
     info = create_dataset(
         root_dir = 'data',
-        item_folder = '/mnt/c/Users/14135/Desktop/SDP-Training-Pipe/items',
-        backgrounds = '/mnt/c/Users/14135/Desktop/SDP-Training-Pipe/backgrounds',
+        item_folder = 'items',
+        backgrounds = 'backgrounds',
         dataset_size = 11,
     )
 
@@ -200,7 +200,7 @@ def main():
     )
 
     # save net as a pth for ashton 
-    net.save('/mnt/c/Users/14135/Desktop/SDP-Training-Pipe/model.pth')
+    net.save('model.pth')
 
 if __name__ == "__main__":
     main()
