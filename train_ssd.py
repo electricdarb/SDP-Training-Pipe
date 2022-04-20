@@ -262,9 +262,6 @@ def main():
         dataset_path = 'data' # info['root_dir']
     )
 
-    # save net as a pth for ashton 
-    net.save('model.pth')
-
     export_onnx(net)
 
     print(WOLF)
