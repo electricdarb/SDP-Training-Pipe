@@ -234,19 +234,23 @@ def export_onnx(model, savepath = 'AshtonThisIsTheModel.onnx', input_size = (1, 
     torch.onnx.export(model, dummy_input, savepath, verbose = True)
 
     print('Exported ONNX model \n\n')
-    
-        
+
+
 def main():
+    # define vars
+    item_folder = 'items'
+    root_data_dir = 'data'
+    
     # segment photos
     segment_main(
         image_in_dir = '', 
-        image_out_dir = 'items'
+        image_out_dir = item_folder
     )
 
     # create dataset here
     info = create_dataset(
-        root_dir = 'data',
-        item_folder = 'items',
+        root_dir = root_data_dir,
+        item_folder = item_folder,
         backgrounds = 'backgrounds',
         dataset_size = 2000
     )
@@ -259,12 +263,14 @@ def main():
         weight_decay = 0.000101129, 
         t_max = 116, 
         base_lr = 4.1e-5, 
-        num_classes = 11, #info['num_classes'] + 1,
-        dataset_path = 'data' # info['root_dir']
+        num_classes = info['num_classes'] + 1,
+        dataset_path = root_data_dir # info['root_dir']
     )
 
+    # export onnx net for ASHTON
     export_onnx(net)
 
+    # print the easter egg
     print(WOLF)
 
 
