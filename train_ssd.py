@@ -27,6 +27,24 @@ from tqdm import trange
 
 from segment import main as segment_main
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--input-images", 
+    help = """path to root folder with input images
+file structure should be:
+-input-images
+    -item1
+        1.jpg
+        2.jpg
+        ...
+    -item2
+        1.jpg
+        2.jpg
+""", default = "./items_in"
+)
+
+args = parser.parse_args()
+
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 WOLF = """
@@ -242,20 +260,25 @@ def main():
     root_data_dir = 'data'
     
     # segment photos
+    print("\n\n\n SEGMENTING PHOTOS \n\n\n")
     segment_main(
-        image_in_dir = '', 
+        image_in_dir = args.input_images, 
         image_out_dir = item_folder
     )
+    print("\n\n\n SEGMENTING PHOTOS DONE \n\n\n")
 
     # create dataset here
+    print("\n\n\n CREATING DATASET \n\n\n")
     info = create_dataset(
         root_dir = root_data_dir,
         item_folder = item_folder,
         backgrounds = 'backgrounds',
         dataset_size = 2000
     )
+    print("\n\n\n CREATING DATASET DONE \n\n\n")
 
     # create net
+    print("\n\n\n TRAINING MODEL \n\n\n")
     net = train_net(
         epochs = 4, 
         lr = .0183, 
@@ -264,8 +287,9 @@ def main():
         t_max = 116, 
         base_lr = 4.1e-5, 
         num_classes = info['num_classes'] + 1,
-        dataset_path = root_data_dir # info['root_dir']
+        dataset_path = root_data_dir 
     )
+    print("\n\n\n TRAINING MODEL DONE \n\n\n")
 
     # export onnx net for ASHTON
     export_onnx(net)

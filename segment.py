@@ -13,7 +13,7 @@ def segment(image_path, output_path = "output1.png"):
     
     # segment image
     cmd = ['backgroundremover',
-        '-i', "marvel.jpg", 
+        '-i', image_path, 
         '-o', output_path]
 
     cmd_output = subprocess.check_output(cmd, stdin=ps.stdout)
@@ -39,6 +39,12 @@ def main(image_in_dir, image_out_dir = "./itemstest"):
     # list the items in image_in_dir as strings 
     items = [str(item_name).replace("<DirEntry '", "").replace("'>", "") for item_name in os.scandir(image_in_dir)]
 
+    # clear old objects if exsits 
+    dir = image_out_dir
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+    os.makedirs(dir)
+
     # iter through each image on the way in
     for item in items:
         # clear output dir of any contents 
@@ -55,13 +61,13 @@ def main(image_in_dir, image_out_dir = "./itemstest"):
             photo_in_path = os.path.join(image_in_dir, item, photo_in_file)
             photo_out_path = os.path.join(image_out_dir, item, f'{i}.png')
 
-            print(f"Photo from {photo_in_file} segmented and cropped into {photo_out_path}")
+            print(f"Photo from {photo_in_path} segmented and cropped into {photo_out_path}")
 
             # segment the image and write the item to correct folder
             segment(photo_in_path, photo_out_path)
 
 if __name__ == '__main__':
     main(
-        image_in_dir = '',
-        image_out_dir = ''
+        image_in_dir = 'items_in',
+        image_out_dir = 'items'
         )
