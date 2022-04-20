@@ -71,7 +71,6 @@ WOLF = """
                                                     .,(//#%/%. *.,#**(//  
 """
 
-
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     net.train(True)
     running_loss = 0.0
@@ -128,6 +127,7 @@ def test(loader, net, criterion, device):
         running_classification_loss += classification_loss.item()
 
     return running_loss / num, running_regression_loss / num, running_classification_loss / num
+
 
 def get_data_loaders(dataset_path = 'data'):
     dataset_paths = [dataset_path]
@@ -223,6 +223,7 @@ def train_net(epochs,
 
     return net 
 
+
 def export_onnx(model, savepath = 'AshtonThisIsTheModel.onnx', input_size = (1, 3, 300, 300)):
     # create dummy input that you pass to onnx during compilation
     dummy_input = torch.zeros(input_size)
@@ -233,7 +234,7 @@ def export_onnx(model, savepath = 'AshtonThisIsTheModel.onnx', input_size = (1, 
     torch.onnx.export(model, dummy_input, savepath, verbose = True)
 
     print('Exported ONNX model \n\n')
-
+    
         
 def main():
     # segment photos

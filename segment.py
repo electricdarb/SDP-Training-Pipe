@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import subprocess
 import os
+import shutil 
 
 
 def segment(image_path, output_path = "output1.png"):
@@ -31,7 +32,8 @@ def segment(image_path, output_path = "output1.png"):
     cropped_image = image[ymin:ymax, xmin:xmax]
 
     # saved cropped image 
-    cv2.imwrite(output_path, cropped_image)
+    cv2.imwrite(output_path, cropped_image)\
+
 
 def main(image_in_dir, image_out_dir = "./itemstest"):
     # list the items in image_in_dir as strings 
@@ -39,6 +41,12 @@ def main(image_in_dir, image_out_dir = "./itemstest"):
 
     # iter through each image on the way in
     for item in items:
+        # clear output dir of any contents 
+        dir = os.path.join(image_out_dir, item)
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+        os.makedirs(dir)
+
         photos_in_path = os.path.join(image_in_dir, item)
         photo_files = [str(file).replace("<DirEntry '", "").replace("'>", "") for file in os.scandir(photos_in_path)]
 
