@@ -25,13 +25,18 @@ from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
 from vision.utils.misc import store_labels
 from tqdm import trange
 
+from segment import main as segment_main
+
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 WOLF = """
 ##############################################################################
-############################THANK YOU PROF WOLF###############################
-##############################################################################
-##############################################################################                                                                              
+###################                                   ########################
+###################   THANK YOU PROF WOLF AND TEAM    ########################
+###################                                   ########################
+##############################################################################   
+
+                                                                           
                                                      .##%/              *(.     
                                                      (#&(#%#//(*/(*(/%(*,/#     
                                                     */,%,*#&&,(%%/(#&/.(&(*     
@@ -227,13 +232,17 @@ def export_onnx(model, savepath = 'AshtonThisIsTheModel.onnx', input_size = (1, 
     # export onnx model 
     torch.onnx.export(model, dummy_input, savepath, verbose = True)
 
-    print('Exporting model')
-
-    print(WOLF)
+    print('Exported ONNX model \n\n')
 
         
 def main():
-    # create dataset here\
+    # segment photos
+    segment_main(
+        image_in_dir = '', 
+        image_out_dir = 'items'
+    )
+
+    # create dataset here
     info = create_dataset(
         root_dir = 'data',
         item_folder = 'items',
@@ -257,6 +266,9 @@ def main():
     net.save('model.pth')
 
     export_onnx(net)
+
+    print(WOLF)
+
 
 if __name__ == "__main__":
     main()
