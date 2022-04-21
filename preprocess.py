@@ -1,7 +1,11 @@
+from turtle import back
+from unittest import registerResult, result
 import cv2
 import os
 import numpy as np
 import random
+from scipy.ndimage import rotate as ndrotate
+
 
 def center_crop(img):
 	"""Returns center cropped image
@@ -12,8 +16,8 @@ def center_crop(img):
 
 	# process crop width and height for max available dimension
 	crop_width = img.shape[0] if img.shape[0]<img.shape[1] else img.shape[1]
-	mid_x, mid_y = int(width / 2), int(height / 2)
-	cw2, ch2 = int(crop_width/2), int(crop_width / 2) 
+	mid_x, mid_y = width // 2, height // 2
+	cw2, ch2 = crop_width // 2, crop_width // 2 
 	crop_img = img[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 	return crop_img
 
@@ -57,10 +61,18 @@ def contrast_shift(image: cv2, contrast: float) -> cv2:
     return cv2.convertScaleAbs(image, alpha=contrast*2+1)
 
 def rotate(image, theta):
-    angle = theta *180/np.pi
-    image_center = tuple(np.array(image.shape[1::-1]) / 2)
-    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    """ rotates an image by theta"""
+    angle = theta * 180 / np.pi 
+
+    image_center = image.shape[1] / 2, image.shape[0] / 2
+    rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1.)
+
+    result = cv2.warpAffine(image, 
+            rotation_matrix, 
+            (image.shape[1], image.shape[0]),
+            flags=cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_TRANSPARENT)
+
     return result
 
 def shift(image, y_shift_factor, x_shift_factor):
@@ -133,7 +145,7 @@ def overlay(background, img, scale, center_x = .5, center_y = .5):
     """
     assert img.shape[-1] == 4, "img has incorrect labels"
 
-    h, w = [int(background.shape[i] * scale) for i in range(2)]
+    h, w = int(background.shape[0] * scale), int(background.shape[1] * scale)
 
     y = int(background.shape[0] * center_y - h/2)
     x = int(background.shape[1] * center_x - w/2)
@@ -144,13 +156,13 @@ def overlay(background, img, scale, center_x = .5, center_y = .5):
     mask = img[:, :, 3:] / 255 
 
     # repeating the mask over channels
-    mask = np.repeat(mask, 3, axis = -1) 
+    mask = np.repeat(mask, 4, axis = -1) 
 
     # mask for the background,  ones and zeros 
-    mask_inv = (mask - 1) * -1 
+    mask_inv = 1.0 - mask
 
     # apply mask to overlay
-    ov = img[:, :, :3] * mask 
+    ov = img[:, :, :4] * mask 
 
     # variables to account for edge conditions
     x_l, y_l = max(0, -x), max(0, -y) # if x > 0, no boundry issue, else limit edges
@@ -167,31 +179,28 @@ def overlay(background, img, scale, center_x = .5, center_y = .5):
 
     return background
 
-
-def augment(image, rotate_range = np.pi/12, 
-                        brightness_range = .2,
-                        hue_range = 0.05, 
-                        contrast_range = .2,
-                        shift_range = 0,
-                        random_flip = False,
-                        add_noise = True):
-    image = image # prevent hazards
-
-    image = rotate(image, random.uniform(-rotate_range, rotate_range))
-
-
-    # apply random shift 
-    x_shift = random.uniform(-shift_range, shift_range)
-    y_shift = random.uniform(-shift_range, shift_range)
-    image = shift(image, x_shift, y_shift)
-
-    # save copy of image for proccess later
-    image_orignal = image.copy()
-
+def augment_pixels(image,
+                brightness_range = .2,
+                hue_range = 0.05, 
+                contrast_range = .2,
+                add_noise = True):
     image = brightness_shift(image, random.uniform(-brightness_range, brightness_range)) # random adjust background brightness
     image = hue_shift(image, random.uniform(-hue_range, hue_range)) # random adjust background hue 
     image = contrast_shift(image, random.uniform(-contrast_range, contrast_range))
     if add_noise: image = noise(image, random.uniform(0, 10))
+
+    return image
+
+def augment(image, 
+                rotate_range = np.pi/12, 
+                shift_range = 0,
+                random_flip = False, # this is true becuase the neurons are still activating 
+                ):
+
+    image = image # prevent hazards
+
+    # save copy of image for proccess later
+    image_orignal = image.copy()
 
     if random_flip:
         if random.random() < .5:
@@ -203,6 +212,14 @@ def augment(image, rotate_range = np.pi/12,
     if image_orignal.shape[-1] == 4:
         image_orignal[:, :, :3] = image[:, :, :3]
         image = image_orignal
+        assert image.shape[-1] == 4
+    
+    image = rotate(image, random.uniform(-rotate_range, rotate_range))
+
+    # apply random shift 
+    x_shift = random.uniform(-shift_range, shift_range)
+    y_shift = random.uniform(-shift_range, shift_range)
+    image = shift(image, x_shift, y_shift)
 
     return image
 
@@ -211,7 +228,7 @@ def preprocess(item_files,
             output_size = (640, 640),
             scale_range = (.1, .3),
             root_dir = './',
-            oclusion = False):
+            occlusion = False):
     """
     Args:
         item_files: filenames of object images 
@@ -233,7 +250,7 @@ def preprocess(item_files,
     background_shape = background.shape
 
     # apply transforms to background 
-    background = augment(background)
+    background = augment(background, shift_range = .1)
 
     # create list to store labels in
     labels = []
@@ -247,9 +264,8 @@ def preprocess(item_files,
         # apply custom augmentations
         item = augment(item, rotate_range = np.pi)
 
-        if oclusion:
-            # remove random box to simulate partial occlusion
-            item = remove_randbox(item, random.uniform(.3, .7), random.uniform(.3, .7))   
+        # remove random box to simulate partial occlusion
+        if occlusion: item = remove_randbox(item, random.uniform(.3, .7), random.uniform(.3, .7))   
 
         # choice x and y randomly
         x_center, y_center = [random.uniform(0., 1.) for i in range(2)]
@@ -267,12 +283,23 @@ def preprocess(item_files,
         xmin, ymin = max(0, xmin), max(0, ymin)
         xmax, ymax = min(1, xmax), min(1, ymax)
 
-        xmin, ymin, xmax, ymax = [int(var * background_shape[0]) for var in (xmin, ymin, xmax, ymax)]
+        xmin = int(xmin * background_shape[1])
+        ymin = int(ymin * background_shape[0])
+        xmax = int(xmax * background_shape[1])
+        ymax = int(ymax * background_shape[0])
 
         # append label to labels list
         labels.append((xmin, ymin, xmax, ymax))
 
+    background = augment_pixels(background)
     return background, labels
 
 if __name__ == '__main__':
-    x = 1
+
+    out, _ = preprocess(['items/Toothbrush/3.png'], 'backgrounds/IMG_9250.JPG')
+    
+    cv2.imshow('window', out)
+
+    cv2.waitKey(0)
+
+    while True: pass

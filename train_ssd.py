@@ -1,7 +1,6 @@
 #
 # train an SSD model on Pascal VOC or Open Images datasets
 #
-from numpy import DataSource
 from createdataset import create_dataset 
 import os
 import sys
@@ -10,6 +9,8 @@ import argparse
 import itertools
 import torch
 from filelock import FileLock
+
+from tqdm import tqdm
 
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -94,7 +95,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
-    for i, data in enumerate(loader):
+    for i, data in enumerate(tqdm(loader)):
         images, boxes, labels = data
         images = images.to(device)
         boxes = boxes.to(device)
@@ -248,7 +249,7 @@ def export_onnx(model, savepath = 'AshtonThisIsTheModel.onnx', input_size = (1, 
     print('Exporting Model')
 
     # export onnx model 
-    torch.onnx.export(model, dummy_input, savepath, verbose = True)
+    torch.onnx.export(model, dummy_input, savepath, verbose = False)
 
     print('Exported ONNX model \n\n')
 
@@ -259,27 +260,29 @@ def main():
     root_data_dir = 'data'
     
     # segment photos
-    print("\n\n\n SEGMENTING PHOTOS \n\n\n")
+    print("\n SEGMENTING PHOTOS \n")
+
     segment_main(
         image_in_dir = args.input_images, 
         image_out_dir = item_folder
     )
-    print("\n\n\n SEGMENTING PHOTOS DONE \n\n\n")
+    print("\n SEGMENTING PHOTOS DONE \n")
 
     # create dataset here
-    print("\n\n\n CREATING DATASET \n\n\n")
+    print("\n CREATING DATASET \n")
     info = create_dataset(
         root_dir = root_data_dir,
         item_folder = item_folder,
         backgrounds = 'backgrounds',
-        dataset_size = 10
+        dataset_size = 300
     )
-    print("\n\n\n CREATING DATASET DONE \n\n\n")
+    print("\n CREATING DATASET DONE \n")
 
     # create net
-    print("\n\n\n TRAINING MODEL \n\n\n")
+    print("\n TRAINING MODEL \n")
+
     net = train_net(
-        epochs = 1, 
+        epochs = 6, 
         lr = .0183, 
         momentum = .49, 
         weight_decay = 0.000101129, 
@@ -288,7 +291,10 @@ def main():
         num_classes = info['num_classes'] + 1,
         dataset_path = root_data_dir 
     )
-    print("\n\n\n TRAINING MODEL DONE \n\n\n")
+
+    print("\n TRAINING MODEL DONE \n")
+
+    net.save('model.pth')
 
     # export onnx net for ASHTON
     export_onnx(net)
@@ -296,6 +302,6 @@ def main():
     # print the easter egg
     print(WOLF)
 
-
 if __name__ == "__main__":
     main()
+

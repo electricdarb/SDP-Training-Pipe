@@ -1,4 +1,6 @@
 from xml.etree.ElementTree import XML
+import xml.etree.ElementTree as ET
+
 from preprocess import preprocess
 import argparse
 import os 
@@ -65,10 +67,8 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
         # remove 
         if os.path.exists(dir):
             shutil.rmtree(dir)
-
         os.makedirs(dir)
         
-
     # define item names and backgrounds
     backgrounds = list(os.scandir(backgrounds))
     item_folders = list(os.scandir(item_folder))
@@ -149,11 +149,63 @@ def create_dataset(root_dir, item_folder, backgrounds, dataset_size = 10, image_
     }
 
     return dataset_info
-            
-        
+
+def read_vox_xml(xml_file: str) -> list:
+    """
+    xml_file: string in xml structure or path to file in xml structure
+    returns: list of lists, sub list is a list of bounding boxes: [xmin, ymin, xmax, ymax]
+    """
+
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    boxes = []
+
+    for boxes_xml in root.iter('object'):
+        # iter over each object in the xml and extract bounding box
+
+        ymin = int(boxes_xml.find("bndbox/ymin").text)
+        xmin = int(boxes_xml.find("bndbox/xmin").text)
+        ymax = int(boxes_xml.find("bndbox/ymax").text)
+        xmax = int(boxes_xml.find("bndbox/xmax").text)
+
+        box = [xmin, ymin, xmax, ymax]
+        boxes.append(box)
+
+    return boxes # list 
+
+
+def test_bounding_box(image_file, bounding_box_path):
+    """"""
+    image = cv2.imread(image_file)
+    
+    # parse bounding boxes 
+    bounding_boxes = read_vox_xml(bounding_box_path)
+
+    # iterate through bounding boxes, draw bounding box on image
+    for xmin, ymin, xmax, ymax in bounding_boxes:
+        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 0, 255), 2)
+
+    # display image
+    cv2.imshow('bounding box', image)
+    
+    cv2.waitKey(1000)
+
+
+
+
+
+
 if __name__ == '__main__':
-    create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = int(args.dataset_size))
+    
+    #create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = int(args.dataset_size))
 
     """
     python createdataset.py --root-dir /mnt/c/Users/14135/Desktop/pytorch-ssd/data --dataset-size 100
     """
+
+    for i in range(1000000):
+        test_bounding_box(image_file = f'data/JPEGImages/{i:05}.jpeg', bounding_box_path = f'data/Annotations/{i:05}.xml')
+        input()
+
+        
