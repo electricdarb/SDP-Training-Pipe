@@ -70,7 +70,6 @@ def rotate(image, theta):
     result = cv2.warpAffine(image, 
             rotation_matrix, 
             (image.shape[1], image.shape[0]),
-            flags=cv2.INTER_LINEAR,
             borderMode=cv2.BORDER_TRANSPARENT)
 
     return result
@@ -145,10 +144,16 @@ def overlay(background, img, scale, center_x = .5, center_y = .5):
     """
     assert img.shape[-1] == 4, "img has incorrect labels"
 
-    h, w = int(background.shape[0] * scale), int(background.shape[1] * scale)
+    bg_height = background.shape[0]
+    bg_width = background.shape[1]
 
-    y = int(background.shape[0] * center_y - h/2)
-    x = int(background.shape[1] * center_x - w/2)
+    item_height = img.shape[0]
+    item_width = img.shape[1]
+
+    h, w = int(bg_height * scale), int(bg_width * scale) # in pixels
+
+    y = int(bg_height * center_y - h/2)
+    x = int(bg_width * center_x - w/2)
 
     img = cv2.resize(img, (w, h))
 
@@ -197,8 +202,6 @@ def augment(image,
                 random_flip = False, # this is true becuase the neurons are still activating 
                 ):
 
-    image = image # prevent hazards
-
     # save copy of image for proccess later
     image_orignal = image.copy()
 
@@ -226,7 +229,7 @@ def augment(image,
 def preprocess(item_files, 
             background_file, 
             output_size = (640, 640),
-            scale_range = (.1, .3),
+            scale_range = (.05, .4),
             root_dir = './',
             occlusion = False):
     """
@@ -236,7 +239,7 @@ def preprocess(item_files,
         output_size: tuple: (pixels, pixels) path to image of output_size,
         scale_range: tuple of floats: range to scale image by [0, 1)
             change scale range to reflect realistic item sizes 
-        """
+    """
 
     # read the back 
     background_path = os.path.join(root_dir, background_file)

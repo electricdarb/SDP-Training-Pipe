@@ -193,19 +193,16 @@ def test_bounding_box(image_file, bounding_box_path):
 
 
 
-
-
-
 if __name__ == '__main__':
     
     create_dataset(args.root_dir, item_folder = args.item_folder, backgrounds = args.backgrounds, dataset_size = int(args.dataset_size))
 
     """
-    python createdataset.py --root-dir /mnt/c/Users/14135/Desktop/pytorch-ssd/data --dataset-size 100
+    python createdataset.py --root-dir ./data --dataset-size 2000
     
-
+    """
     for i in range(1000000):
         test_bounding_box(image_file = f'data/JPEGImages/{i:05}.jpeg', bounding_box_path = f'data/Annotations/{i:05}.xml')
         input()
 
-    """
+   
