@@ -174,8 +174,7 @@ def get_data_loaders(dataset_path = 'data'):
         # create training dataset
         train_dataset = ConcatDataset(datasets)
 
-        train_loader = DataLoader(train_dataset, 1,
-                                num_workers = 2, shuffle = True)
+        train_loader = DataLoader(train_dataset, 1, num_workers = 2, shuffle = True)
         
         val_dataset = VOCDataset(dataset_path, transform=test_transform, target_transform=target_transform, is_test=True)
 
@@ -273,14 +272,14 @@ def main():
         root_dir = root_data_dir,
         item_folder = item_folder,
         backgrounds = 'backgrounds',
-        dataset_size = 2000
+        dataset_size = 10
     )
     print("\n\n\n CREATING DATASET DONE \n\n\n")
 
     # create net
     print("\n\n\n TRAINING MODEL \n\n\n")
     net = train_net(
-        epochs = 4, 
+        epochs = 1, 
         lr = .0183, 
         momentum = .49, 
         weight_decay = 0.000101129, 
