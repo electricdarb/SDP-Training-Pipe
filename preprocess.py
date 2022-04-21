@@ -141,7 +141,7 @@ def overlay(background, img, scale, center_x = .5, center_y = .5):
     img = cv2.resize(img, (w, h))
 
     # make transparency mask binary
-    mask = img[:, :, 3:] // 255 
+    mask = img[:, :, 3:] / 255 
 
     # repeating the mask over channels
     mask = np.repeat(mask, 3, axis = -1) 
