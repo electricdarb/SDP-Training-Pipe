@@ -6,7 +6,6 @@ import numpy as np
 import random
 from scipy.ndimage import rotate as ndrotate
 
-
 def center_crop(img):
 	"""Returns center cropped image
 	Args:
@@ -70,7 +69,8 @@ def rotate(image, theta):
     result = cv2.warpAffine(image, 
             rotation_matrix, 
             (image.shape[1], image.shape[0]),
-            borderMode=cv2.BORDER_TRANSPARENT)
+            
+            )
 
     return result
 

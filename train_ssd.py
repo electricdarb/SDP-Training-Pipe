@@ -244,7 +244,8 @@ def train_net(epochs,
 
 def export_onnx(model, savepath = 'AshtonThisIsTheModel.onnx', input_size = (1, 3, 300, 300)):
     # create dummy input that you pass to onnx during compilation
-    dummy_input = torch.zeros(input_size)
+    dummy_input = torch.zeros(input_size).to('cpu')
+    model.to('cpu')
 
     print('Exporting Model')
 
@@ -258,7 +259,7 @@ def main():
     # define vars
     item_folder = 'items'
     root_data_dir = 'data'
-    
+    """
     # segment photos
     print("\n SEGMENTING PHOTOS \n")
 
@@ -277,7 +278,7 @@ def main():
         dataset_size = 300
     )
     print("\n CREATING DATASET DONE \n")
-
+    """
     # create net
     print("\n TRAINING MODEL \n")
 
@@ -288,7 +289,7 @@ def main():
         weight_decay = 0.000101129, 
         t_max = 116, 
         base_lr = 4.1e-5, 
-        num_classes = info['num_classes'] + 1,
+        num_classes = 10 + 1,
         dataset_path = root_data_dir 
     )
 
