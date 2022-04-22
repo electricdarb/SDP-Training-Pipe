@@ -199,16 +199,16 @@ def hyp_search():
         name = "exp",
         scheduler = sched,
         stop = {
-            "training_iteration": 5
+            "training_iteration": 4
         },
         #resources_per_trial={"cpu": 2, "gpu": 1},  # set this for GPUs
-        resources_per_trial = {'cpu': 1},
-        num_samples = 20,
+        resources_per_trial = {'cpu': 8},
+        num_samples = 8,
         config = {
             'lr': tune.loguniform(5e-4, 5e-2),
             'base_lr': tune.loguniform(1e-6, 1e-4),
             'momentum': tune.uniform(0.1, 0.9),
-            'weight_decay': tune.loguniform(1e-6, 1e-3),
+            'weight_decay': tune.loguniform(1e-5, 1e-2),
             't_max': tune.uniform(50, 200),
             "wandb": {
                 'project': "SDP_hypsearch_0",

@@ -1,5 +1,9 @@
 __pycache__
-
+__pycache__/*
 data
+data/*
 /*.jpg
 /*.jpeg
+*__pycache__
+/vision/__pycache__
+/vision/__pycache__/*

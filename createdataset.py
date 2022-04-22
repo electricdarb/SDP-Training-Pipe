@@ -49,7 +49,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--root-dir", help = "Directory where folder is or is to be created", default = './data')
 parser.add_argument("--item-folder", help = "folder that has the items, see README for structure information", default = './items')
 parser.add_argument("--backgrounds", help = "folder that has the background images, see README for structure information", default = './backgrounds')
-parser.add_argument("--dataset-size", help = "number of images to generate in the dataset", default = 10)
+parser.add_argument("--dataset-size", help = "number of images to generate in the dataset", default = 500)
 
 args = parser.parse_args()
 
@@ -160,6 +160,7 @@ def read_vox_xml(xml_file: str) -> list:
     root = tree.getroot()
 
     boxes = []
+    labels = []
 
     for boxes_xml in root.iter('object'):
         # iter over each object in the xml and extract bounding box
@@ -169,10 +170,14 @@ def read_vox_xml(xml_file: str) -> list:
         ymax = int(boxes_xml.find("bndbox/ymax").text)
         xmax = int(boxes_xml.find("bndbox/xmax").text)
 
+        label = boxes_xml.find('name').text
+
+        labels.append(label)
+
         box = [xmin, ymin, xmax, ymax]
         boxes.append(box)
 
-    return boxes # list 
+    return boxes, labels # list 
 
 
 def test_bounding_box(image_file, bounding_box_path):
@@ -180,11 +185,29 @@ def test_bounding_box(image_file, bounding_box_path):
     image = cv2.imread(image_file)
     
     # parse bounding boxes 
-    bounding_boxes = read_vox_xml(bounding_box_path)
+    bounding_boxes, labels = read_vox_xml(bounding_box_path)
+
+    font                   = cv2.FONT_HERSHEY_SIMPLEX
+    bottomLeftCornerOfText = (10,500)
+    fontScale              = 1
+    fontColor              = (255,255,255)
+    thickness              = 1
+    lineType               = 2
+
 
     # iterate through bounding boxes, draw bounding box on image
+    i  = 0
     for xmin, ymin, xmax, ymax in bounding_boxes:
+        label = labels[i]
+        cv2.putText(image,label, 
+            (xmin, ymin), 
+            font, 
+            fontScale,
+            fontColor,
+            thickness,
+            lineType)
         cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 0, 255), 2)
+        i += 1
 
     # display image
     cv2.imshow('bounding box', image)
@@ -200,9 +223,13 @@ if __name__ == '__main__':
     """
     python createdataset.py --root-dir ./data --dataset-size 2000
     
-    """
-    for i in range(1000000):
-        test_bounding_box(image_file = f'data/JPEGImages/{i:05}.jpeg', bounding_box_path = f'data/Annotations/{i:05}.xml')
-        input()
+    
+    files = [str(label).replace("<DirEntry ", "").replace(">", "").replace("'", "").replace('.jpeg', '').replace('.jpg', '') for label in os.scandir('data/JPEGImages')]
+    for file in files:
+        try:
+            test_bounding_box(image_file = f'data/JPEGImages/{file}.jpg', bounding_box_path = f'data/Annotations/{file}.xml')
+            input()
+        except:
+            pass
 
-   
+   """

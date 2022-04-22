@@ -283,12 +283,12 @@ def main():
     print("\n TRAINING MODEL \n")
 
     net = train_net(
-        epochs = 6, 
+        epochs = 15, 
         lr = .0183, 
         momentum = .49, 
-        weight_decay = 0.000101129, 
+        weight_decay = 0.00101129, 
         t_max = 116, 
-        base_lr = 4.1e-5, 
+        base_lr = 4.1e-4, 
         num_classes = 10 + 1,
         dataset_path = root_data_dir 
     )
