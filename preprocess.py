@@ -229,7 +229,7 @@ def augment(image,
 def preprocess(item_files, 
             background_file, 
             output_size = (640, 640),
-            scale_range = (.05, .4),
+            scale_range = (.1, .4),
             root_dir = './',
             occlusion = False):
     """

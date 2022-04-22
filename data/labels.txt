@@ -1,10 +1,10 @@
-ball
-battery
+bulb
 card
-febreze
-lightbulb
-pez
-spoon
-sunscreen
+headphones
+keys
+sketch
+sunblock
 tie
 toy
+wallet
+wstripper

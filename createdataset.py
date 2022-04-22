@@ -49,7 +49,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--root-dir", help = "Directory where folder is or is to be created", default = './data')
 parser.add_argument("--item-folder", help = "folder that has the items, see README for structure information", default = './items')
 parser.add_argument("--backgrounds", help = "folder that has the background images, see README for structure information", default = './backgrounds')
-parser.add_argument("--dataset-size", help = "number of images to generate in the dataset", default = 500)
+parser.add_argument("--dataset-size", help = "number of images to generate in the dataset", default = 10)
 
 args = parser.parse_args()
 
